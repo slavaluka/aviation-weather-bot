@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 interface MetarResponse {
   name: string;
   rawOb: string;
+  fltCat: string;
   reportTime: string;
 }
 
@@ -19,6 +20,7 @@ export interface WeatherData {
   date: string | null;
   metar: string | null;
   taf: string | null;
+  fltCat: string | null;
   error?: string;
 }
 
@@ -35,12 +37,14 @@ export class WeatherService {
       date: null,
       metar: null,
       taf: null,
+      fltCat: null,
     };
 
     try {
       const metarData = await this.fetchMetar(code);
       result.name = metarData.name;
       result.date = this.formatDate(metarData.reportTime);
+      result.fltCat = metarData.fltCat;
       result.metar = metarData.rawOb;
     } catch {
       result.metar = null;

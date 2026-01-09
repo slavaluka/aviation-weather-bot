@@ -94,6 +94,10 @@ export class WeatherUpdate {
       response += `${weather.date}\n\n\u2708\uFE0F ${weather.name}\n\n`;
     }
 
+    if (weather.fltCat) {
+      response += `<b>Flight Category</b>: ${weather.fltCat}\n\n`;
+    }
+
     if (weather.metar) {
       response += `<b>METAR</b>\n<pre>${weather.metar}</pre>\n`;
     }
