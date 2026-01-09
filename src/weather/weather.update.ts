@@ -69,10 +69,22 @@ export class WeatherUpdate {
       return;
     }
 
+    // Send loading message
+    const loadingMessage = await ctx.reply('Collecting data...');
+
+    if (!ctx.chat) {
+      return;
+    }
+
     const weather = await this.weatherService.getWeather(text);
 
     if (weather.error) {
-      await ctx.reply(weather.error);
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        loadingMessage.message_id,
+        undefined,
+        weather.error,
+      );
       return;
     }
 
@@ -91,6 +103,12 @@ export class WeatherUpdate {
       response += `<b>TAF</b>\n<pre>${weather.taf}</pre>`;
     }
 
-    await ctx.reply(response, { parse_mode: 'HTML' });
+    await ctx.telegram.editMessageText(
+      ctx.chat.id,
+      loadingMessage.message_id,
+      undefined,
+      response,
+      { parse_mode: 'HTML' },
+    );
   }
 }
