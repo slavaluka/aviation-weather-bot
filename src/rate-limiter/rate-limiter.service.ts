@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 interface UserRequestData {
   timestamps: number[];
@@ -10,10 +11,20 @@ export class RateLimiterService {
   private readonly MAX_REQUESTS = 15;
   private readonly TIME_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
   private readonly BLOCK_DURATION_MS = 60 * 60 * 1000; // 1 hour
+  private readonly isDevMode: boolean;
 
   private readonly userRequests = new Map<number, UserRequestData>();
 
+  constructor(private readonly configService: ConfigService) {
+    this.isDevMode = this.configService.get<string>('DEV_MODE') === 'true';
+  }
+
   isAllowed(userId: number): boolean {
+    // Skip rate limiting in development mode
+    if (this.isDevMode) {
+      return true;
+    }
+
     const now = Date.now();
     let userData = this.userRequests.get(userId);
 
