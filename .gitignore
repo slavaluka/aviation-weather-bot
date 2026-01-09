@@ -23,6 +23,7 @@ Thumbs.db
 logs/
 *.log
 npm-debug.log*
+bun-debug.log*
 
 # Test coverage
 coverage/
