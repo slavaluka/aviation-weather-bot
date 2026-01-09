@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(bun install:*)",
+      "Bash(bun run build:*)",
+      "Bash(git -C /Users/lukianchuk/Developer/Personal/aviation-weather-bot status --short)",
+      "Bash(git -C /Users/lukianchuk/Developer/Personal/aviation-weather-bot diff)",
+      "Bash(git -C /Users/lukianchuk/Developer/Personal/aviation-weather-bot add:*)",
+      "Bash(git -C /Users/lukianchuk/Developer/Personal/aviation-weather-bot commit -m \"$\\(cat <<''EOF''\nSwitch from npm to bun\n\nReplace package-lock.json with bun.lock and update .gitignore for bun debug logs.\nEOF\n\\)\")"
     ]
   }
 }
