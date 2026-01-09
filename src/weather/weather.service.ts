@@ -2,7 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 
+interface MetarResponse {
+  name: string;
+  rawOb: string;
+  reportTime: string;
+}
+
+interface TafResponse {
+  name: string;
+  rawTAF: string;
+  issueTime: string;
+}
+
 export interface WeatherData {
+  name: string | null;
+  date: string | null;
   metar: string | null;
   taf: string | null;
   error?: string;
@@ -10,25 +24,37 @@ export interface WeatherData {
 
 @Injectable()
 export class WeatherService {
-  private readonly METAR_URL =
-    'https://tgftp.nws.noaa.gov/data/observations/metar/stations';
-  private readonly TAF_URL =
-    'https://tgftp.nws.noaa.gov/data/forecasts/taf/stations';
+  private readonly API_BASE = 'https://aviationweather.gov/api/data';
 
   constructor(private readonly httpService: HttpService) {}
 
   async getWeather(icaoCode: string): Promise<WeatherData> {
     const code = icaoCode.toUpperCase();
-    const result: WeatherData = { metar: null, taf: null };
+    const result: WeatherData = {
+      name: null,
+      date: null,
+      metar: null,
+      taf: null,
+    };
 
     try {
-      result.metar = await this.fetchMetar(code);
+      const metarData = await this.fetchMetar(code);
+      result.name = metarData.name;
+      result.date = this.formatDate(metarData.reportTime);
+      result.metar = metarData.rawOb;
     } catch {
       result.metar = null;
     }
 
     try {
-      result.taf = await this.fetchTaf(code);
+      const tafData = await this.fetchTaf(code);
+      if (!result.name) {
+        result.name = tafData.name;
+      }
+      if (!result.date) {
+        result.date = this.formatDate(tafData.issueTime);
+      }
+      result.taf = tafData.rawTAF;
     } catch {
       result.taf = null;
     }
@@ -40,27 +66,34 @@ export class WeatherService {
     return result;
   }
 
-  private async fetchMetar(code: string): Promise<string> {
-    const url = `${this.METAR_URL}/${code}.TXT`;
-    const response = await firstValueFrom(
-      this.httpService.get<string>(url, { responseType: 'text' }),
-    );
-    return this.parseWeatherData(response.data);
+  private formatDate(isoString: string): string {
+    const date = new Date(isoString);
+    return date.toUTCString().replace('GMT', 'UTC');
   }
 
-  private async fetchTaf(code: string): Promise<string> {
-    const url = `${this.TAF_URL}/${code}.TXT`;
+  private async fetchMetar(code: string): Promise<MetarResponse> {
+    const url = `${this.API_BASE}/metar?ids=${code}&format=json`;
     const response = await firstValueFrom(
-      this.httpService.get<string>(url, { responseType: 'text' }),
+      this.httpService.get<MetarResponse[]>(url),
     );
-    return this.parseWeatherData(response.data);
-  }
 
-  private parseWeatherData(data: string): string {
-    const lines = data.trim().split('\n');
-    if (lines.length > 1) {
-      return lines.slice(1).join('\n').trim();
+    if (!response.data || response.data.length === 0) {
+      throw new Error('No METAR data available');
     }
-    return data.trim();
+
+    return response.data[0];
+  }
+
+  private async fetchTaf(code: string): Promise<TafResponse> {
+    const url = `${this.API_BASE}/taf?ids=${code}&format=json`;
+    const response = await firstValueFrom(
+      this.httpService.get<TafResponse[]>(url),
+    );
+
+    if (!response.data || response.data.length === 0) {
+      throw new Error('No TAF data available');
+    }
+
+    return response.data[0];
   }
 }

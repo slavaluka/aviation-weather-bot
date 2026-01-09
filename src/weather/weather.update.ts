@@ -57,15 +57,19 @@ export class WeatherUpdate {
 
     let response = '';
 
+    if (weather.date && weather.name) {
+      response += `${weather.date}\n\n\u2708\uFE0F ${weather.name}\n\n`;
+    }
+
     if (weather.metar) {
-      response += `METAR:\n${weather.metar}`;
+      response += `<b>METAR</b>\n\n${weather.metar}`;
     }
 
     if (weather.taf) {
-      if (response) response += '\n\n';
-      response += `TAF:\n${weather.taf}`;
+      if (weather.metar) response += '\n\n';
+      response += `<b>TAF</b>\n\n${weather.taf}`;
     }
 
-    await ctx.reply(response);
+    await ctx.reply(response, { parse_mode: 'HTML' });
   }
 }
