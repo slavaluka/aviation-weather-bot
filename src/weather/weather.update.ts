@@ -1,12 +1,16 @@
 import { Update, Start, Help, On, Ctx } from 'nestjs-telegraf';
 import { Context } from 'telegraf';
 import { WeatherService } from './weather.service';
+import { RateLimiterService } from '../rate-limiter/rate-limiter.service';
 
 @Update()
 export class WeatherUpdate {
   private readonly ICAO_REGEX = /^[A-Za-z]{4}$/;
 
-  constructor(private readonly weatherService: WeatherService) {}
+  constructor(
+    private readonly weatherService: WeatherService,
+    private readonly rateLimiterService: RateLimiterService,
+  ) {}
 
   @Start()
   async onStart(@Ctx() ctx: Context): Promise<void> {
@@ -45,6 +49,25 @@ export class WeatherUpdate {
       await ctx.reply(
         'Please send a valid 4-letter ICAO airport code (e.g., KJFK).',
       );
+      return;
+    }
+
+    // Check rate limit (only for valid ICAO requests)
+    const userId = ctx.from?.id;
+    if (!userId) {
+      return;
+    }
+
+    if (!this.rateLimiterService.isAllowed(userId)) {
+      const blockedUntil = this.rateLimiterService.getBlockedUntil(userId);
+      if (blockedUntil) {
+        const minutesLeft = Math.ceil(
+          (blockedUntil.getTime() - Date.now()) / 60000,
+        );
+        await ctx.reply(
+          `Too many requests. Please try again in ${minutesLeft} minute${minutesLeft > 1 ? 's' : ''}.`,
+        );
+      }
       return;
     }
 
