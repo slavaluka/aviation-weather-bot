@@ -1,0 +1,24 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { HttpModule } from '@nestjs/axios';
+import { WeatherService } from './weather/weather.service';
+import { WeatherUpdate } from './weather/weather.update';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TelegrafModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        token: configService.getOrThrow<string>('BOT_TOKEN'),
+      }),
+      inject: [ConfigService],
+    }),
+    HttpModule,
+  ],
+  providers: [WeatherService, WeatherUpdate],
+})
+export class AppModule {}
