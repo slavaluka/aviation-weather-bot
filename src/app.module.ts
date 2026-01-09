@@ -4,6 +4,7 @@ import { TelegrafModule } from 'nestjs-telegraf';
 import { HttpModule } from '@nestjs/axios';
 import { WeatherService } from './weather/weather.service';
 import { WeatherUpdate } from './weather/weather.update';
+import { RateLimiterService } from './rate-limiter/rate-limiter.service';
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { WeatherUpdate } from './weather/weather.update';
     }),
     HttpModule,
   ],
-  providers: [WeatherService, WeatherUpdate],
+  providers: [WeatherService, WeatherUpdate, RateLimiterService],
 })
 export class AppModule {}
