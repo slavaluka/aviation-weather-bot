@@ -60,14 +60,12 @@ export class WeatherUpdate {
 
     if (!this.rateLimiterService.isAllowed(userId)) {
       const blockedUntil = this.rateLimiterService.getBlockedUntil(userId);
-      if (blockedUntil) {
-        const minutesLeft = Math.ceil(
-          (blockedUntil.getTime() - Date.now()) / 60000,
-        );
-        await ctx.reply(
-          `Too many requests. Please try again in ${minutesLeft} minute${minutesLeft > 1 ? 's' : ''}.`,
-        );
-      }
+      const minutesLeft = blockedUntil
+        ? Math.ceil((blockedUntil.getTime() - Date.now()) / 60000)
+        : 60;
+      await ctx.reply(
+        `Too many requests. Please try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`,
+      );
       return;
     }
 
