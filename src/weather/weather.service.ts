@@ -24,6 +24,13 @@ export interface WeatherData {
   error?: string;
 }
 
+/**
+ * Service for fetching aviation weather data from Aviation Weather API
+ *
+ * Retrieves METAR (current observations) and TAF (forecasts) data for airports
+ * identified by their ICAO codes. Handles errors gracefully by returning partial
+ * data if one source fails.
+ */
 @Injectable()
 export class WeatherService {
   private readonly logger = new Logger(WeatherService.name);
