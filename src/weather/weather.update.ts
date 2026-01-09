@@ -62,12 +62,12 @@ export class WeatherUpdate {
     }
 
     if (weather.metar) {
-      response += `<b>METAR</b>\n\n${weather.metar}`;
+      response += `<b>METAR</b>\n<pre>${weather.metar}</pre>\n`;
     }
 
     if (weather.taf) {
-      if (weather.metar) response += '\n\n';
-      response += `<b>TAF</b>\n\n${weather.taf}`;
+      if (weather.metar) response += '\n';
+      response += `<b>TAF</b>\n<pre>${weather.taf}</pre>`;
     }
 
     await ctx.reply(response, { parse_mode: 'HTML' });
